@@ -2,6 +2,9 @@ See a demo:
 http://coolstufflist.com/heatmap
 http://www.youtube.com/watch?v=9c2jF7hBvVM
 
+See the jQuery Plugin demo
+http://coolstufflist.com/heatmap/jquery_example.html
+
 Uses Google Maps and Flex
 All client side.
 See index.html for an example.
