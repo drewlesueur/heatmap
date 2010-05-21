@@ -26,14 +26,13 @@ CoordMapType.prototype.maxZoom = 19;
 
 CoordMapType.prototype.getTile = function(coord, zoom, ownerDocument) {
   var div = ownerDocument.createElement('DIV');
-  div.innerHTML = coord;
+  //div.innerHTML = coord;
   div.style.width = this.tileSize.width + 'px';
   div.style.height = this.tileSize.height + 'px';
   div.style.fontSize = '10';
-  div.style.borderStyle = 'solid';
-  div.style.borderWidth = '1px';
-  div.style.borderColor = '#AAAAAA';
-  
+  //div.style.borderStyle = 'solid';
+  //div.style.borderWidth = '1px';
+  //div.style.borderColor = '#AAAAAA';
                   var flash = thisMovie(callback+"_id");
                    var my_points = []
                 for (var i in world_coords) {
@@ -72,16 +71,17 @@ CoordMapType.prototype.getTile = function(coord, zoom, ownerDocument) {
                     'centerValue' : config.centerValue
                     //'gradient' : [0,50331903,100663551,167772415,218104063,285212927,335544575,385876223,452985077,503316726,570425591,620757240,671088889,738197753,788529401,855638266,905969914,956301562,1023410427,1073742071,1140850935,1191182584,1241514232,1308623096,1358954744,1426063609,1476395257,1526726905,1593835770,1644167418,1711276282,1761607930,1811939578,1879048440,1929380090,1996488954,2046820603,2097152251,2164261113,2214592761,2281701625,2332033273,2382364923,2449473787,2499805436,2566914298,2617245946,2667577594,2734686458,2785018106,2852126972,2902458620,2952790267,3019899132,3070230780,3137339644,3187671292,3238002939,3305111803,3355443452,3422552316,3472883964,3523215612,3590324477,3640656124,3707764988,3758096636,3808428285,3875537149,3925868797,3992977662,4043309309,4093640957,4160749822,4211081470,4278190335,4278386939,4278583544,4278845684,4279042289,4279304430,4279501034,4279697639,4279959779,4280156384,4280418525,4280615129,4280811734,4281073874,4281270479,4281532620,4281729224,4281925829,4282187969,4282384574,4282646715,4282843319,4283039924,4283302064,4283498669,4283760810,4283957414,4284154019,4284416159,4284612764,4284874905,4285071509,4285268114,4285530254,4285726859,4285989000,4286185604,4286382209,4286644349,4286840954,4287103095,4287299699,4287496304,4287758444,4287955049,4288217190,4288413794,4288610399,4288872539,4289069144,4289331285,4289527889,4289724494,4289986634,4290183239,4290445380,4290641984,4290838589,4291100729,4291297334,4291559475,4291756079,4291952684,4292214824,4292411429,4292673570,4292870174,4293066779,4293328919,4293525524,4293787665,4293984269,4294180874,4294443014,4294639619,4294901760,4294902531,4294903302,4294904330,4294905101,4294906129,4294906900,4294907671,4294908699,4294909470,4294910498,4294911269,4294912040,4294913068,4294913839,4294914867,4294915638,4294916409,4294917437,4294918208,4294919236,4294920007,4294920778,4294921806,4294922577,4294923605,4294924376,4294925147,4294926175,4294926946,4294927974,4294928745,4294929516,4294930544,4294931315,4294932343,4294933114,4294933885,4294934913,4294935684,4294936712,4294937483,4294938254,4294939282,4294940053,4294941081,4294941852,4294942623,4294943651,4294944422,4294945450,4294946221,4294946992,4294948020,4294948791,4294949819,4294950590,4294951361,4294952389,4294953160,4294954188,4294954959,4294955730,4294956758,4294957529,4294958557,4294959328,4294960099,4294961127,4294961898,4294962926,4294963697,4294964468,4294965496,4294966267,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295]
                 });
+
+                  var ajax = $.ajax({
+                    'type' : 'POST',
+                    //'async' : false,
+                    'url' : 'http://coolstufflist.com/heatmap/data-proxy.php' ,
+                    'data' : {data : data},
+                    'success' : function(ret) { $(div).append("<img src='http://coolstufflist.com/heatmap/images/"+ret+"' />")}
+                  })
+
   
-  $.ajax({
-    'type' : 'POST',
-    'async' : false,
-    'url' : 'http://coolstufflist.com/heatmap/data-proxy.php' ,
-    'data' : {data : data}
-    
-  })
-  
-  return div;
+            return div;
 };
 
 CoordMapType.prototype.name = "Tile #s";
@@ -137,7 +137,7 @@ var coordinateMapType = new CoordMapType();
                 });
                 
                 
-
+                 
                 return "data:image/png;base64," + data;
                 //can return an html element too  
               },
@@ -253,7 +253,6 @@ var coordinateMapType = new CoordMapType();
                     //
            } else {
                 window[callback] = function(){
-                  
                   if (config.map == '') {
                           if (config.mapOptions == '') {
                               var latlng = new google.maps.LatLng(36.9741171, -122.0307963);
@@ -267,8 +266,15 @@ var coordinateMapType = new CoordMapType();
                           config.map = new google.maps.Map($(div)[0], config.mapOptions);
                          
                         }
-                         config.map.overlayMapTypes.insertAt(0, heat_map)
-                         config.map.overlayMapTypes.insertAt(1, coordinateMapType)
+                        
+                        if (navigator.appName.indexOf("Microsoft") != -1) {
+                              config.map.overlayMapTypes.insertAt(1, coordinateMapType) //works
+                         } else {
+                               config.map.overlayMapTypes.insertAt(0, heat_map)
+                             return document[movieName];
+                         }
+                        
+                         
                          //config.map.mapTypes.set('coordinate',coordinateMapType);
                          //config.map.setMapTypeId('coordinate');
                  }
@@ -280,8 +286,7 @@ var coordinateMapType = new CoordMapType();
            var params = {allowScriptAccess: 'allways', 'bgcolor' : '#869ca7'}
            var attributes = {}
            
-           
-           swfobject.embedSWF(config.swf, callback + "_id", "300", "120", "10.0.0", "",flashvars, params) //,config.swf, flashvars, params, attributes);
+           swfobject.embedSWF(config.swf, callback + "_id", "300", "120", "9.0.0", "",flashvars, params) //,config.swf, flashvars, params, attributes);
            //swfobject.embedSWF("HelloWorld.swf", "map", "100", "100", "9"); // , expressInstallSwfurl, flashvars, params, attributes, callbackFn) 
             
             /*

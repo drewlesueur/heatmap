@@ -1,4 +1,6 @@
 <?php
+
+
 if (get_magic_quotes_gpc()) {
     $process = array(&$_GET, &$_POST, &$_COOKIE, &$_REQUEST);
     while (list($key, $val) = each($process)) {
@@ -16,21 +18,24 @@ if (get_magic_quotes_gpc()) {
 }
 
 
+
 $data = $_REQUEST['data'];
 
-$data = explode(',' , $data);
-$start = $data[0];
-$b64 = $data[1];
+header('Content-Type: image/png');
+header('Content-Transfer-Encoding: binary');
 
-$start= explode(";", $start);
 
-$mime = $start[0];
-$encoding = $start[1];
-if ($mime == "image/png") {
-  $ret = base54_decode($b64);
-  header('Content-Type: ' . $mime);
-  echo $ret;
-}
+$data = base64_decode($data);
+
+
+$name = md5($data) . ".png";
+file_put_contents("images/" . $name, $data);
+echo $name;
+
+
+exit();
+
+
 
 
 ?>
