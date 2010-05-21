@@ -1,6 +1,6 @@
 package {
 	import flash.display.Sprite;
-	//import flash.text.TextField;
+	import flash.text.TextField;
 	import flash.external.ExternalInterface;
 	
 	
@@ -24,6 +24,8 @@ package {
         import mx.graphics.codec.JPEGEncoder;
     import mx.utils.Base64Encoder;
     import flash.utils.ByteArray;
+    
+    import flash.system.Security;
 	
 	public class HelloWorld extends Sprite {
 		
@@ -34,13 +36,19 @@ package {
 		
 		
 		public function HelloWorld() {
-			//var display_txt:TextField = new TextField();
-			//display_txt.text = "Hello World!";
-			//addChild(display_txt);
+		
+      Security.allowDomain("*");
+			var display_txt:TextField = new TextField();
+			display_txt.text = "Hello World!";
+			addChild(display_txt);
 			
+			try {
 			ExternalInterface.addCallback("receive", receive);
 			ExternalInterface.addCallback("drawHeatMap", drawHeatMap);
 			ExternalInterface.call("flash_ready", width);
+			} catch (e:Error) {
+			    display_txt.text = e.toString();
+			}
 		}
 		
 		public function receive():void {
