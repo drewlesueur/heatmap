@@ -1,0 +1,18 @@
+See a demo:
+http://www.youtube.com/watch?v=9c2jF7hBvVM
+
+Uses Google Maps Flex
+All client side.
+See index.html for an example.
+Run http.py and then go to http://localhost.
+
+Working out IE issues.
+Also Working out some flash issues.
+
+
+Special thanks to Michael VanDaniker for the code to
+fo the heatmaps in Flex.
+http://michaelvandaniker.com/blog/2008/07/06/how-to-make-heat-maps-in-flex/
+
+Also thanks to Chad W. L. Whitacre. His documentation of gheat (http://code.google.com/p/gheat/)
+helped me with this

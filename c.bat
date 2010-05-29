@@ -1,0 +1,1 @@
+c:\"Documents and Settings"\"Drew LeSueur"\"My Documents"\"Downloads"\flex\bin\mxmlc -static-link-runtime-shared-libraries -o %1.swf %1.as 
