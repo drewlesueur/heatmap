@@ -263,8 +263,9 @@ var coordinateMapType = new CoordMapType();
                     //only call once because It may tried to be called twice
                     window[callback] = function(){} 
                    //hide the flash                             
-                   $('#' + callback + '_id').css({'position': 'absolute', 'left' : '-3000px', 'top': '0'})
-                              
+                   //$('#' + callback + '_id').css({'position': 'absolute', 'left' : '-3000px', 'top': '0'})
+                   $('#' + callback + '_id').css({'width': '0px', 'height': '0px'})
+           
                   if (config.map == '') {
                           if (config.mapOptions == '') {
                               var latlng = new google.maps.LatLng(33.4483771, -112.0740373);
