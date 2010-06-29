@@ -90,8 +90,8 @@ package {
 
             var gradientArray:Array = options.gradient || RAINBOW;
             
-            var width:int = 256;
-            var height:int = 256;
+            var width:int = options.tileSize || 256;
+            var height:int = options.tileSize || 256;
             
             
         	  /*
