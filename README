@@ -10,8 +10,16 @@ Run http.py and then go to http://localhost.
 Works in all main browsers and IE8.
 
 Special thanks to Michael VanDaniker for the code to
-fo the heatmaps in Flex.
+for the heatmaps in Flex.
 http://michaelvandaniker.com/blog/2008/07/06/how-to-make-heat-maps-in-flex/
 
 Also thanks to Chad W. L. Whitacre. His documentation of gheat (http://code.google.com/p/gheat/)
 helped me with this.
+
+
+Also thanks to the Google Maps v3 api for the documentation and demo for Overlays and the Mercator Projection code
+
+http://code.google.com/apis/maps/documentation/javascript/overlays.html#TileCoordinates
+
+http://code.google.com/apis/maps/documentation/javascript/examples/map-coordinates.html
+ 
