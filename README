@@ -2,15 +2,12 @@ See a demo:
 http://coolstufflist.com/heatmap
 http://www.youtube.com/watch?v=9c2jF7hBvVM
 
-See the jQuery Plugin demo
-http://coolstufflist.com/heatmap/jquery_example.html
-
 Uses Google Maps and Flex
 All client side.
-See index.html for an example.
+*See index.html for an example.*
 Run http.py and then go to http://localhost.
 
-*Working out IE issues. (half works)
+Works in all main browsers and IE8.
 
 Special thanks to Michael VanDaniker for the code to
 fo the heatmaps in Flex.
