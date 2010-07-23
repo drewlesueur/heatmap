@@ -1,0 +1,322 @@
+<html>
+<head>
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+<script src="jquery.js"></script>
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
+<script type="text/javascript">
+
+var radius = 25;
+var opacity = 0.75
+var centerValue = 10;
+
+
+
+//http://code.google.com/apis/maps/documentation/javascript/overlays.html#TileCoordinates
+//http://code.google.com/apis/maps/documentation/javascript/examples/map-coordinates.html
+var MERCATOR_RANGE = 256;
+ 
+function bound(value, opt_min, opt_max) {
+  if (opt_min != null) value = Math.max(value, opt_min);
+  if (opt_max != null) value = Math.min(value, opt_max);
+  return value;
+}
+ 
+function degreesToRadians(deg) {
+  return deg * (Math.PI / 180);
+}
+ 
+function radiansToDegrees(rad) {
+  return rad / (Math.PI / 180);
+}
+ 
+function MercatorProjection() {
+  this.pixelOrigin_ = new google.maps.Point(
+      MERCATOR_RANGE / 2, MERCATOR_RANGE / 2);
+  this.pixelsPerLonDegree_ = MERCATOR_RANGE / 360;
+  this.pixelsPerLonRadian_ = MERCATOR_RANGE / (2 * Math.PI);
+};
+ 
+MercatorProjection.prototype.fromLatLngToPoint = function(latLng, opt_point) {
+  var me = this;
+ 
+  var point = opt_point || new google.maps.Point(0, 0);
+ 
+  var origin = me.pixelOrigin_;
+  point.x = origin.x + latLng.lng() * me.pixelsPerLonDegree_;
+  // NOTE(appleton): Truncating to 0.9999 effectively limits latitude to
+  // 89.189.  This is about a third of a tile past the edge of the world tile.
+  var siny = bound(Math.sin(degreesToRadians(latLng.lat())), -0.9999, 0.9999);
+  point.y = origin.y + 0.5 * Math.log((1 + siny) / (1 - siny)) * -me.pixelsPerLonRadian_;
+  return point;
+};
+ 
+MercatorProjection.prototype.fromPointToLatLng = function(point) {
+  var me = this;
+  
+  var origin = me.pixelOrigin_;
+  var lng = (point.x - origin.x) / me.pixelsPerLonDegree_;
+  var latRadians = (point.y - origin.y) / -me.pixelsPerLonRadian_;
+  var lat = radiansToDegrees(2 * Math.atan(Math.exp(latRadians)) - Math.PI / 2);
+  return new google.maps.LatLng(lat, lng);
+};
+
+function get_tile_coord(pixelCoordinate) {
+    var tileCoordinate = new google.maps.Point(Math.floor(pixelCoordinate.x / MERCATOR_RANGE), Math.floor(pixelCoordinate.y / MERCATOR_RANGE));
+    return tileCoordinate;
+}
+
+function get_pixel_coord(worldCoordinate) {
+    var pixelCoordinate = new google.maps.Point(worldCoordinate.x * Math.pow(2, map.getZoom()), worldCoordinate.y * Math.pow(2, map.getZoom()));
+    return pixelCoordinate;
+}
+
+//http://code.google.com/apis/maps/documentation/javascript/overlays.html#ImageMapTypes
+var count = 0;
+var heat_map_options = {
+  getTileUrl: function(coord, zoom) {
+    var flash = thisMovie('flashy');
+    var my_points = []
+    for (var i in world_coords) {
+       worldCoordinate = world_coords[i];
+       var pixelCoordinate = get_pixel_coord(worldCoordinate);
+       var tileCoordinate = get_tile_coord(pixelCoordinate);
+       //if (Math.abs(tileCoordinate.x - coord.x) < 2 && Math.abs(tileCoordinate.y - coord.y) < 2) { //cut off
+       
+       var tile_pixel_coord = {x: coord.x * 256, y: coord.y * 256}
+       
+       var left_dist = pixelCoordinate.x - tile_pixel_coord.x
+       var right_dist = tile_pixel_coord.x + 256 - pixelCoordinate.x
+       var top_dist = pixelCoordinate.y - tile_pixel_coord.y;
+       var bottom_dist = tile_pixel_coord.y + 256 - pixelCoordinate.y;
+       var buffer = -1 * radius * 2  //better algorithm?
+             if (left_dist > buffer && right_dist > buffer && top_dist > buffer && bottom_dist > buffer) {
+                 var x = pixelCoordinate.x - 256 * coord.x;
+                 var y = pixelCoordinate.y - 256 * coord.y;
+                 my_points.push([x,y,intensities[i]]);
+             }
+       /*
+       if (tileCoordinate.x == coord.x && tileCoordinate.y == coord.y) { //cut off
+         var x = pixelCoordinate.x - 256 * tileCoordinate.x;
+         var y = pixelCoordinate.y - 256 * tileCoordinate.y;
+         my_points.push([x,y]);
+       } */
+       //cache this and the above in the future
+    }
+    
+    var data = flash.drawHeatMap({
+        'points' : my_points,
+        'radius' : radius,
+        'opacity' : opacity,
+        'centerValue' : centerValue
+        //'gradient' : [0,50331903,100663551,167772415,218104063,285212927,335544575,385876223,452985077,503316726,570425591,620757240,671088889,738197753,788529401,855638266,905969914,956301562,1023410427,1073742071,1140850935,1191182584,1241514232,1308623096,1358954744,1426063609,1476395257,1526726905,1593835770,1644167418,1711276282,1761607930,1811939578,1879048440,1929380090,1996488954,2046820603,2097152251,2164261113,2214592761,2281701625,2332033273,2382364923,2449473787,2499805436,2566914298,2617245946,2667577594,2734686458,2785018106,2852126972,2902458620,2952790267,3019899132,3070230780,3137339644,3187671292,3238002939,3305111803,3355443452,3422552316,3472883964,3523215612,3590324477,3640656124,3707764988,3758096636,3808428285,3875537149,3925868797,3992977662,4043309309,4093640957,4160749822,4211081470,4278190335,4278386939,4278583544,4278845684,4279042289,4279304430,4279501034,4279697639,4279959779,4280156384,4280418525,4280615129,4280811734,4281073874,4281270479,4281532620,4281729224,4281925829,4282187969,4282384574,4282646715,4282843319,4283039924,4283302064,4283498669,4283760810,4283957414,4284154019,4284416159,4284612764,4284874905,4285071509,4285268114,4285530254,4285726859,4285989000,4286185604,4286382209,4286644349,4286840954,4287103095,4287299699,4287496304,4287758444,4287955049,4288217190,4288413794,4288610399,4288872539,4289069144,4289331285,4289527889,4289724494,4289986634,4290183239,4290445380,4290641984,4290838589,4291100729,4291297334,4291559475,4291756079,4291952684,4292214824,4292411429,4292673570,4292870174,4293066779,4293328919,4293525524,4293787665,4293984269,4294180874,4294443014,4294639619,4294901760,4294902531,4294903302,4294904330,4294905101,4294906129,4294906900,4294907671,4294908699,4294909470,4294910498,4294911269,4294912040,4294913068,4294913839,4294914867,4294915638,4294916409,4294917437,4294918208,4294919236,4294920007,4294920778,4294921806,4294922577,4294923605,4294924376,4294925147,4294926175,4294926946,4294927974,4294928745,4294929516,4294930544,4294931315,4294932343,4294933114,4294933885,4294934913,4294935684,4294936712,4294937483,4294938254,4294939282,4294940053,4294941081,4294941852,4294942623,4294943651,4294944422,4294945450,4294946221,4294946992,4294948020,4294948791,4294949819,4294950590,4294951361,4294952389,4294953160,4294954188,4294954959,4294955730,4294956758,4294957529,4294958557,4294959328,4294960099,4294961127,4294961898,4294962926,4294963697,4294964468,4294965496,4294966267,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295]
+    });
+    return "data:image/png;base64," + data;
+    
+    return "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9YGARc5KB0XV+IAAAAddEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRoIFRoZSBHSU1Q72QlbgAAAF1JREFUGNO9zL0NglAAxPEfdLTs4BZM4DIO4C7OwQg2JoQ9LE1exdlYvBBeZ7jqch9//q1uH4TLzw4d6+ErXMMcXuHWxId3KOETnnXXV6MJpcq2MLaI97CER3N0vr4MkhoXe0rZigAAAABJRU5ErkJggg=="
+    //return "http://mt3.google.com/mapstt?" + "zoom=" + zoom + "&x=" + coord.x + "&y=" + coord.y + "&client=google";
+    //can return an html element too  
+  },
+  tileSize: new google.maps.Size(256, 256),
+  isPng: true
+};
+var heat_map = new google.maps.ImageMapType(heat_map_options);
+
+
+
+  var intensities = []
+   var lat_lngs = []
+   var world_coords = []
+   
+function get_points(selector) {
+   var projection = new MercatorProjection();
+   var t = $(selector).val();
+   t = t.split("\n")
+   t = $.map(t, function(x, i) {
+      return $.trim(x)
+   })
+ 
+   
+   // another way to loop thru array
+   $(t).each(function(){
+      var row = this.split(",");
+      intensities.push(row[0]);
+      var point = new google.maps.LatLng(row[1], row[2])
+      lat_lngs.push(point);
+      world_coords.push(projection.fromLatLngToPoint(point));
+   })
+
+}
+
+  var map;  
+  function initialize() {
+    get_points('#points')
+    var latlng = new google.maps.LatLng(36.9741171, -122.0307963);
+    var myOptions = {
+      zoom: 8,
+      center: latlng,
+      mapTypeId: google.maps.MapTypeId.ROADMAP
+    };
+    map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+    map.overlayMapTypes.insertAt(0, heat_map)
+  }
+
+
+function thisMovie(movieName) {
+
+
+   if (navigator.appName.indexOf("Microsoft") != -1) {
+       return window[movieName];
+   } else {
+       return document[movieName];
+   }
+}
+
+function flash_ready(x) {
+ var flash = thisMovie('flashy');
+ $(document).ready(initialize);
+ 
+}
+
+
+</script>
+</head>
+<body>
+  <div id="map_canvas" style="width:100%; height:100%"></div>
+ 
+ 
+  <object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"
+             id="flashy" width="500" height="375"
+             codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab">
+         <param name="movie" value="HelloWorld.swf" />
+         <param name="quality" value="high" />
+         <param name="bgcolor" value="#869ca7" />
+         <param name="flashVars" value="callback=flash_ready" />
+         <param name="allowScriptAccess" value="always" />
+         <embed id= "flashy" src="HelloWorld.swf" quality="high" bgcolor="#869ca7"
+             width="500" height="375" name="flashy" align="middle"
+             play="true" loop="false" quality="high" allowScriptAccess="always"
+             type="application/x-shockwave-flash"
+             pluginspage="http://www.macromedia.com/go/getflashplayer" flashVars="callback=flash_ready">
+         </embed>
+     </object>
+
+ 
+  <textarea id="points" style="display:none;">
+14,32.600000,-96.767751
+13,32.610000,-80.152594
+15,32.610000,-96.951808
+4,32.620000,-96.874188
+8,32.660000,-117.041286
+6,32.660000,-96.762505
+16,32.660000,-97.004569
+5,32.670000,-95.487313
+12,32.670000,-97.078613
+6,32.670000,-97.368950
+12,32.680000,-114.624630
+9,32.680000,-97.186941
+12,32.690000,-97.271407
+13,32.690000,-97.336823
+12,32.700000,-114.637567
+2,32.700000,-97.282870
+12,32.710000,-96.843588
+1,32.710000,-97.097534
+13,32.720000,-80.085498
+13,32.720000,-80.085498
+12,32.720000,-80.268430
+11,32.720000,-96.783416
+9,32.720000,-97.237410
+16,32.720000,-97.335129
+2,32.720000,-97.434713
+11,32.720000,-97.495585
+6,32.730000,-79.975676
+4,32.730000,-94.943703
+16,32.730000,-96.822811
+3,32.730000,-97.123682
+11,32.730000,-97.484957
+12,32.740000,-96.277918
+15,32.740000,-96.700085
+13,32.740000,-97.394745
+16,32.740000,-97.632370
+4,32.750000,-117.244968
+12,32.750000,-81.210350
+15,32.750000,-96.822036
+7,32.750000,-96.830918
+7,32.750000,-97.012701
+15,32.750000,-97.259562
+2,32.750000,-97.332953
+5,32.760000,-79.831139
+16,32.760000,-96.583523
+4,32.760000,-97.799249
+7,32.760000,-98.890193
+10,32.770000,-79.973634
+2,32.770000,-96.704987
+14,32.770000,-97.409242
+9,32.780000,-79.929373
+8,32.780000,-79.930601
+14,32.780000,-80.043882
+3,32.780000,-96.800000
+4,32.780000,-96.800000
+5,36.210000,-119.085336
+9,36.210000,-86.325106
+8,36.230000,-119.321921
+6,36.270000,-95.855027
+4,36.310000,-119.798829
+9,36.320000,-76.156720
+9,36.320000,-86.585245
+15,36.330000,-119.308829
+12,36.330000,-119.646056
+16,36.420000,-119.098930
+7,36.590000,-121.872689
+11,36.610000,-118.057523
+1,36.610000,-119.448696
+15,36.670000,-77.551050
+4,36.730000,-108.205284
+10,36.740000,-119.678864
+4,36.750000,-119.747678
+15,36.750000,-76.210549
+3,36.790000,-119.755365
+11,36.790000,-119.755620
+2,36.790000,-119.755620
+3,36.810000,-119.808510
+2,36.820000,-77.483162
+4,36.870000,-75.981606
+13,37.000000,-89.166207
+3,37.060000,-120.858290
+8,37.090000,-94.517643
+11,37.170000,-101.353350
+16,37.230000,-80.414440
+16,37.250000,-121.931293
+3,37.280000,-121.947017
+7,37.320000,-79.999379
+9,37.330000,-120.473494
+13,37.350000,-120.595941
+1,37.360000,-122.133343
+2,37.370000,-118.400166
+2,37.380000,-119.626179
+3,37.410000,-79.142500
+4,37.440000,-76.320278
+5,37.500000,-119.975947
+5,37.520000,-77.479650
+15,37.560000,-77.442597
+4,37.580000,-101.369589
+1,37.590000,-77.548455
+2,37.670000,-120.957547
+3,37.690000,-85.857489
+11,37.700000,-121.434713
+8,37.720000,-89.219471
+15,37.730000,-120.954151
+10,37.730000,-88.925254
+10,37.740000,-88.539324
+16,37.770000,-120.849544
+10,37.810000,-121.198751
+2,37.900000,-88.929900
+7,37.910000,-120.602011
+16,37.920000,-76.474305
+13,37.920000,-99.409847
+15,37.940000,-101.266640
+7,37.960000,-121.290647
+3,37.960000,-84.480947
+  </textarea>
+  
+</body>
+</html>
