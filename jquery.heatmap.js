@@ -529,7 +529,7 @@
                         if (config.mapOptions == '') {
                             var latlng = new google.maps.LatLng(33.4483771, -112.0740373);
                             config.mapOptions = {
-                                zoom: 7,
+                                zoom: 5,
                                 center: latlng,
                                 mapTypeId: google.maps.MapTypeId.ROADMAP
                             };
